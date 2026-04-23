@@ -1,13 +1,18 @@
 package main
 
 import (
+	"io"
+	"os"
+
+	"fyne.io/fyne/v2"
 	"go.senan.xyz/taglib"
 )
 
 type Tags struct {
-	Artista string
-	Titulo  string
-	Album   string
+	Artista  string
+	Titulo   string
+	Album    string
+	Caratula fyne.StaticResource
 }
 
 func (t Tags) escribirTags(archivo string) {
@@ -19,6 +24,13 @@ func (t Tags) escribirTags(archivo string) {
 }
 
 func (t *Tags) leerTags(archivo string) error {
+	var imagen []byte
+	imagen, _ = taglib.ReadImage(archivo)
+	if imagen == nil {
+		archivo, _ := os.Open("sinCaratula.png")
+		imagen, _ = io.ReadAll(archivo)
+	}
+	t.Caratula.StaticContent = imagen
 	tags, err := taglib.ReadTags(archivo)
 	if err != nil {
 		return taglib.ErrInvalidFile
