@@ -1,76 +1,79 @@
 package main
 
 import (
+	"path"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	"github.com/ncruces/zenity"
 )
 
-var (
-	listaContainer  *widget.List
-	listaScroll     *container.Scroll
-	ListaArchivos   []string
-	interfaz        *fyne.Container
-	vistaDatos      *fyne.Container
-	btnAbrirCarpeta *widget.Button
-	//variables bind ---------------------
-	artistaBind  = binding.NewString()
-	tituloBind   = binding.NewString()
-	albumBind    = binding.NewString()
-	caratulaBind = binding.NewString()
-)
+var archivos []string
+
+var tagsArchivo = &Tags{}
 
 func main() {
-	//LeerTags("styles.mp4")
-	a := app.NewWithID("mp3TagsFyne")
-	w := a.NewWindow("mp3TagsFyne")
+	app := app.New()
+	window := app.NewWindow("Tags MP3")
 
-	ListaArchivos = []string{}
-	listaContainer = CrearLista()
+	// INPUTS TAGS (artista, título, album) ----------------------------------------------------------------------------------
+	tituloInput := widget.NewEntry()
+	artistaInput := widget.NewEntry()
+	albumInput := widget.NewEntry()
 
-	listaScroll = container.NewVScroll(listaContainer)
+	formInputs := &widget.Form{
+		Items: []*widget.FormItem{
+			{Text: "Título", Widget: tituloInput},
+			{Text: "Artista", Widget: artistaInput},
+			{Text: "Album", Widget: albumInput},
+		},
+	}
+
+	// LISTA DE ARCHIVOS ---------------------------------------------------------------------------
+	listaArchivosWidget := widget.NewList(
+		func() int {
+			return len(archivos)
+		},
+		func() fyne.CanvasObject {
+			return widget.NewLabel("")
+		},
+		func(lii widget.ListItemID, co fyne.CanvasObject) {
+			co.(*widget.Label).SetText(path.Base(archivos[lii]))
+		},
+	)
+	listaArchivosWidget.OnSelected = func(id widget.ListItemID) {
+		tagsArchivo.leerTags(archivos[id])
+		tituloInput.SetText(tagsArchivo.Titulo)
+		artistaInput.SetText(tagsArchivo.Artista)
+		albumInput.SetText(tagsArchivo.Album)
+	}
+
+	listaScroll := container.NewVScroll(listaArchivosWidget)
 	listaScroll.SetMinSize(fyne.NewSize(380, 200))
 
-	vistaDatos = VistaTags()
-
-	btnAbrirCarpeta = widget.NewButton(
-		"Abrir carpeta",
+	// BOTÓN ABRIR ARCHIVOS ---------------------------------------------------------------------------
+	botonAbrirArchivos := widget.NewButton(
+		"Selecciona archivos",
 		func() {
-			ListaArchivos, _ = zenity.SelectFileMultiple(
-				zenity.FileFilters{
-					zenity.FileFilter{
-						Name:     "Archivos de audio",
-						Patterns: []string{"*.mp3", "*.mp4", "*.m4a"},
-						CaseFold: false,
-					},
-				},
-			)
-			if len(ListaArchivos) > 0 {
-				listaContainer.Refresh()
-				LeerTags(ListaArchivos[0])
-				listaContainer.Select(0)
-			}
+			archivos = AbrirArchivos()
+			listaArchivosWidget.Refresh()
 		},
 	)
 
-	listaContainer.OnSelected = func(id widget.ListItemID) {
-		LeerTags(ListaArchivos[id])
-	}
-
-	interfaz = container.New(
-		layout.NewCustomPaddedVBoxLayout(12),
-		btnAbrirCarpeta,
+	// CONTENEDOR DE LA INTERFAZ ----------------------------------------------------------------------
+	interfazContainer := container.New(
+		layout.NewCustomPaddedVBoxLayout(8),
+		botonAbrirArchivos,
 		listaScroll,
-		vistaDatos,
+		formInputs,
 	)
 
-	mainContainer := container.NewPadded(interfaz)
+	// CONTENEDOR PRINCIPAL ---------------------------------------------------------------------------
+	mainContainer := container.NewPadded(interfazContainer)
 
-	w.SetContent(mainContainer)
-	w.Resize(fyne.NewSize(600, 600))
-	w.ShowAndRun()
+	window.SetContent(mainContainer)
+	window.Resize(fyne.NewSize(400, 600))
+	window.ShowAndRun()
 }

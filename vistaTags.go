@@ -14,14 +14,37 @@ func VistaTags() *fyne.Container {
 
 	a, _ := artistaBind.Get()
 	fmt.Println(a)
-	artistaInput := widget.NewEntryWithData(artistaBind)
-	artistaInput.PlaceHolder = "Artista"
 
 	tituloInput := widget.NewEntryWithData(tituloBind)
 	tituloInput.PlaceHolder = "Título"
 
+	artistaInput := widget.NewEntryWithData(artistaBind)
+	artistaInput.PlaceHolder = "Artista"
+	artistaGeneralCheck := widget.NewCheck(
+		"Toda la lista",
+		func(b bool) {
+			fmt.Println("Para todos 🙂‍↔️")
+		},
+	)
+	filaArtista := container.New(
+		layout.NewGridLayoutWithColumns(2),
+		artistaInput,
+		artistaGeneralCheck,
+	)
+
 	albumInput := widget.NewEntryWithData(albumBind)
 	albumInput.PlaceHolder = "Album"
+	albumGeneralCheck := widget.NewCheck(
+		"Toda la lista",
+		func(b bool) {
+			fmt.Println("Para todos 🙂‍↔️")
+		},
+	)
+	filaAlbum := container.New(
+		layout.NewGridLayoutWithColumns(2),
+		albumInput,
+		albumGeneralCheck,
+	)
 
 	botonAceptar := widget.NewButton(
 		"Aceptar",
@@ -32,9 +55,9 @@ func VistaTags() *fyne.Container {
 
 	tagsContainer = container.New(
 		layout.NewCustomPaddedVBoxLayout(12),
-		artistaInput,
 		tituloInput,
-		albumInput,
+		filaArtista,
+		filaAlbum,
 		botonAceptar,
 	)
 	return tagsContainer
