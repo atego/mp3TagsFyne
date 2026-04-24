@@ -5,6 +5,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
@@ -31,6 +32,18 @@ func main() {
 		},
 	}
 
+	// CARÁTULA ---------------------------------------------------------------------------------------------------------
+	var caratulaImagen = canvas.NewImageFromResource(nil)
+	caratulaImagen.Refresh()
+	caratulaImagen.CornerRadius = 8
+
+	caratulaWrap := container.NewGridWrap(fyne.NewSize(150, 150), caratulaImagen)
+	caratulaContainer := container.NewHBox(
+		layout.NewSpacer(),
+		caratulaWrap,
+		layout.NewSpacer(),
+	)
+
 	// LISTA DE ARCHIVOS ---------------------------------------------------------------------------
 	listaArchivosWidget := widget.NewList(
 		func() int {
@@ -48,6 +61,8 @@ func main() {
 		tituloInput.SetText(tagsArchivo.Titulo)
 		artistaInput.SetText(tagsArchivo.Artista)
 		albumInput.SetText(tagsArchivo.Album)
+		caratulaImagen.Resource = &tagsArchivo.Caratula
+		caratulaImagen.Refresh()
 	}
 
 	listaScroll := container.NewVScroll(listaArchivosWidget)
@@ -58,7 +73,16 @@ func main() {
 		"Selecciona archivos",
 		func() {
 			archivos = AbrirArchivos()
+			listaArchivosWidget.UnselectAll()
 			listaArchivosWidget.Refresh()
+			artistaInput.SetText("")
+			artistaInput.Refresh()
+			tituloInput.SetText("")
+			tituloInput.Refresh()
+			albumInput.SetText("")
+			albumInput.Refresh()
+			caratulaImagen.Resource = nil
+			caratulaImagen.Refresh()
 		},
 	)
 
@@ -68,6 +92,7 @@ func main() {
 		botonAbrirArchivos,
 		listaScroll,
 		formInputs,
+		caratulaContainer,
 	)
 
 	// CONTENEDOR PRINCIPAL ---------------------------------------------------------------------------

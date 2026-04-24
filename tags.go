@@ -21,6 +21,7 @@ func (t Tags) escribirTags(archivo string) {
 		taglib.Title:  {t.Titulo},
 		taglib.Album:  {t.Album},
 	}, 0)
+	taglib.WriteImage(archivo, t.Caratula.Content())
 }
 
 func (t *Tags) leerTags(archivo string) error {
